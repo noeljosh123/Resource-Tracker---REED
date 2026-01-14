@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { User, UserRole } from '../types';
+import { User, UserRole } from '../../types';
 import { UserPlus, Shield, User as UserIcon, Check, AtSign, Search, Trash2, Edit3, ArrowLeft } from 'lucide-react';
 
 interface UserManagementProps {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, TimeEntry, Task } from '../types';
+import { User, TimeEntry, Task } from '../../types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Label } from 'recharts';
 import { ArrowLeft, Edit3, Clock, TrendingUp, AlertCircle } from 'lucide-react';
 

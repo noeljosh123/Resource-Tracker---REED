@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { User, Vertical, Task, TimeEntry, EntryStatus } from '../types';
+import { User, Vertical, Task, TimeEntry, EntryStatus } from '../../types';
 import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Search, Check, Send, ArrowLeft } from 'lucide-react';
 
 interface TrackerGridProps {

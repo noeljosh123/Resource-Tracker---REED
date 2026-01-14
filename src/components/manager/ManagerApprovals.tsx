@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, TimeEntry, EntryStatus } from '../types';
+import { User, TimeEntry, EntryStatus } from '../../types';
 import { Check, X, Eye, ClipboardList, ShieldAlert } from 'lucide-react';
 
 interface ManagerApprovalsProps {

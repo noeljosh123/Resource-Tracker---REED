@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Vertical, Task } from '../types';
+import { User, Vertical, Task } from '../../types';
 import { Plus, FolderPlus, Layers, Hash, ChevronRight, ListTree, ChevronDown, Trash2 } from 'lucide-react';
 
 interface TaskManagementProps {

@@ -5,14 +5,11 @@ import {
   Vertical, Task 
 } from './types';
 import { MOCK_USERS, MOCK_VERTICALS, MOCK_TASKS, MOCK_TIME_ENTRIES } from './constants';
-import { AuthView } from './components/Auth';
-import { Layout } from './components/Layout';
-import { EmployeeDashboard } from './components/EmployeeDashboard';
-import { TrackerGrid } from './components/TrackerGrid';
-import { ManagerDashboard } from './components/ManagerDashboard';
-import { TaskManagement } from './components/TaskManagement';
-import { UserManagement } from './components/UserManagement';
-import { EmployeeInspection } from './components/EmployeeInspection';
+import { AuthView } from './components/auth';
+import { Layout } from './components/layout';
+import { EmployeeDashboard, EmployeeInspection } from './components/employee';
+import { TrackerGrid } from './components/shared';
+import { ManagerDashboard, TaskManagement, UserManagement } from './components/manager';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);

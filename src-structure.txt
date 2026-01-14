@@ -1,0 +1,37 @@
+﻿Folder PATH listing for volume SSD (256)
+Volume serial number is F851-6EE8
+D:\PROJECT (CODES)\REED\RESOURCE-TRACKER---REED\SRC
+|   App.tsx
+|   main.tsx
+|   
++---components
+|   +---auth
+|   |       Auth.tsx
+|   |       index.ts
+|   |       
+|   +---employee
+|   |       EmployeeDashboard.tsx
+|   |       EmployeeInspection.tsx
+|   |       index.ts
+|   |       
+|   +---layout
+|   |       index.ts
+|   |       Layout.tsx
+|   |       
+|   +---manager
+|   |       index.ts
+|   |       ManagerApprovals.tsx
+|   |       ManagerDashboard.tsx
+|   |       TaskManagement.tsx
+|   |       UserManagement.tsx
+|   |       
+|   \---shared
+|           index.ts
+|           TrackerGrid.tsx
+|           
++---constants
+|       index.ts
+|       
+\---types
+        index.ts
+        

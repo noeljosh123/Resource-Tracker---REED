@@ -1,5 +1,5 @@
 
-import { UserRole, EntryStatus, User, Division, Vertical, Task, TimeEntry } from './types';
+import { UserRole, EntryStatus, User, Division, Vertical, Task, TimeEntry } from '../types';
 
 export const MOCK_DIVISIONS: Division[] = [
   { id: 'd1', name: 'Software Engineering', managerId: 'u2' },

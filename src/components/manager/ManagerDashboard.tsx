@@ -1,6 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
-import { User, TimeEntry, EntryStatus, Task } from '../types';
+import { User, TimeEntry, EntryStatus, Task } from '../../types';
 import { Users, ClipboardCheck, AlertCircle, TrendingUp, Search, Info, ExternalLink } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 
