@@ -150,10 +150,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
   };
 
   return (
-    <div className="flex flex-col space-y-6 sm:space-y-8 animate-in fade-in duration-700">
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 shrink-0">
+    <div className="flex flex-col space-y-4 sm:space-y-5 animate-in fade-in duration-700">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tighter flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tighter flex items-center gap-3">
             Hey, {user.fullName.split(' ')[0]} <span className="animate-pulse">👋</span>
           </h1>
           <p className="text-gray-400 font-bold uppercase tracking-widest text-[8px] sm:text-[9px] mt-1 ml-1">Resource Tracker</p>
@@ -174,10 +174,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 shrink-0">
-        <StatCard icon={<Clock size={22} />} label="Total Logged" value={`${totalHours}h`} subtext="Total system allocation" color="orange" />
-        <StatCard icon={<TrendingUp size={22} />} label="Top Focus" value={topTask ? topTask.name : "None"} subtext={topTask ? `${topTask.hours}h total recorded` : "No activity logged"} color="emerald" />
-        <StatCard icon={<Layers size={22} />} label="Active Tasks" value={uniqueTaskCount.toString()} subtext="Unique activities logged" color="amber" className="sm:col-span-2 lg:col-span-1" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 shrink-0">
+        <StatCard icon={<Clock size={20} />} label="Total Logged" value={`${totalHours}h`} subtext="Total system allocation" color="orange" />
+        <StatCard icon={<TrendingUp size={20} />} label="Top Focus" value={topTask ? topTask.name : "None"} subtext={topTask ? `${topTask.hours}h total recorded` : "No activity logged"} color="emerald" />
+        <StatCard icon={<Layers size={20} />} label="Active Tasks" value={uniqueTaskCount.toString()} subtext="Unique activities logged" color="amber" className="sm:col-span-2 lg:col-span-1" />
       </div>
 
       <div className="flex justify-center shrink-0">
@@ -196,8 +196,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
       <div className="relative w-full">
         {/* Using simple conditional rendering instead of absolute positioning to allow responsive height growth on mobile */}
         {view === 'overview' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 animate-in fade-in duration-500">
-            <div className="lg:col-span-2 bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col min-h-[300px] sm:h-[500px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 animate-in fade-in duration-500">
+            <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col min-h-[250px] sm:h-[380px]">
               <div className="flex items-center justify-between mb-8 shrink-0">
                 <div className="flex items-center space-x-3">
                     <div className="p-3 bg-[#EA5B0C]/5 rounded-xl text-[#EA5B0C]"><Zap size={22} strokeWidth={2.5} /></div>
@@ -220,7 +220,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
               </div>
             </div>
 
-            <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col">
+            <div className="bg-white p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col">
               <div className="flex items-center justify-between mb-8 shrink-0">
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-blue-50 rounded-xl text-blue-600"><CalendarDays size={22} strokeWidth={2.5} /></div>
@@ -252,8 +252,8 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 animate-in fade-in duration-500">
-            <div className="lg:col-span-2 bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col min-h-[300px] sm:h-[500px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 animate-in fade-in duration-500">
+            <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col min-h-[250px] sm:h-[380px]">
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 shrink-0 gap-4">
                   <div className="flex items-center space-x-3">
                       <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600"><PieChart size={22} strokeWidth={2.5} /></div>
@@ -289,7 +289,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
               </div>
             </div>
 
-            <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col min-h-[400px]">
+            <div className="bg-white p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col min-h-[320px]">
               <div className="flex items-center justify-between mb-8 shrink-0">
                   <div className="flex items-center space-x-3">
                       <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600"><TrendingUp size={22} strokeWidth={2.5} /></div>
@@ -322,10 +322,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
 };
 
 const StatCard: React.FC<{ icon: React.ReactNode, label: string, value: string, subtext: string, color: string, className?: string }> = ({ icon, label, value, subtext, color, className = "" }) => (
-  <div className={`bg-white p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-[#EA5B0C]/10 transition-all group overflow-hidden relative ${className}`}>
-    <div className={`absolute -right-8 -top-8 w-32 sm:w-36 h-32 sm:h-36 bg-[#EA5B0C] opacity-[0.03] rounded-full group-hover:scale-110 transition-transform duration-700`}></div>
-    <div className="relative z-10 flex items-center space-x-4 sm:space-x-5">
-      <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 ${
+  <div className={`bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:shadow-[#EA5B0C]/10 transition-all group overflow-hidden relative ${className}`}>
+    <div className={`absolute -right-8 -top-8 w-28 sm:w-32 h-28 sm:h-32 bg-[#EA5B0C] opacity-[0.03] rounded-full group-hover:scale-110 transition-transform duration-700`}></div>
+    <div className="relative z-10 flex items-center space-x-3 sm:space-x-4">
+      <div className={`p-2.5 sm:p-3 rounded-xl transition-all duration-300 ${
         color === 'orange' ? 'bg-[#EA5B0C]/10 text-[#EA5B0C] group-hover:bg-[#EA5B0C] group-hover:text-white' :
         color === 'emerald' ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white' :
         'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'
@@ -334,8 +334,8 @@ const StatCard: React.FC<{ icon: React.ReactNode, label: string, value: string, 
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[8px] sm:text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">{label}</p>
-        <p className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 mt-0.5 tracking-tighter truncate leading-none">{value}</p>
-        <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 mt-1.5 uppercase tracking-tight opacity-70 truncate">{subtext}</p>
+        <p className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900 mt-0.5 tracking-tighter truncate leading-none">{value}</p>
+        <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tight opacity-70 truncate">{subtext}</p>
       </div>
     </div>
   </div>

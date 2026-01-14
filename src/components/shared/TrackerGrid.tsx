@@ -294,9 +294,9 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
         {/* Responsive Footer Summary Bar */}
         <div className="bg-white border-t border-gray-100 shrink-0 z-40 overflow-x-auto no-scrollbar">
           <div className="flex w-full items-center h-20 sm:h-24 min-w-[900px]">
-            <div className="w-[340px] shrink-0 p-5 sm:p-8 flex flex-col justify-center items-end pr-8 sm:pr-10 border-r border-gray-100 bg-[#FAFAFA] sticky left-0 z-50 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
-                 <span className="text-[9px] sm:text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Allocations</span>
-                 <span className="text-[8px] sm:text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-0.5 sm:mt-1">Weekly Cumulative</span>
+            <div className="w-[340px] shrink-0 p-5 sm:p-8 flex flex-col justify-center items-start pl-8 sm:pl-10 border-r border-gray-100 bg-[#FAFAFA] sticky left-0 z-50 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                 <span className="text-[9px] sm:text-[11px] font-black text-gray-700 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Allocations</span>
+                 <span className="text-[8px] sm:text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-0.5 sm:mt-1">Weekly Cumulative</span>
             </div>
             {dailyTotals.map((total, idx) => (
               <div key={idx} className="w-20 sm:w-24 shrink-0 h-full flex flex-col items-center justify-center border-r border-gray-50 bg-white transition-colors hover:bg-gray-50">

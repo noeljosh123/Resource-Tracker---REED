@@ -117,11 +117,11 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users,
   }, [divisionEmployees, entries]);
 
   return (
-    <div className="flex flex-col space-y-8 animate-in fade-in slide-in-from-top duration-500">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 shrink-0">
+    <div className="flex flex-col space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-top duration-500">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tighter">Oversight Hub</h1>
-          <p className="text-gray-500 font-medium mt-1">Real-time resource verification and utilization metrics.</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tighter">Oversight Hub</h1>
+          <p className="text-gray-500 font-medium mt-1 text-sm">Real-time resource verification and utilization metrics.</p>
         </div>
         <div className="flex items-center space-x-3 bg-white px-4 py-3 rounded-2xl border border-gray-100 shadow-sm transition-all focus-within:border-[#EA5B0C]/40 focus-within:shadow-lg focus-within:shadow-[#EA5B0C]/5 w-full lg:w-auto">
            <Search size={18} className="text-gray-300 ml-1" />
@@ -129,20 +129,20 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users,
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 shrink-0">
-        <SummaryCard icon={<Users className="text-orange-600" size={24} />} label="Team Capacity" value={divisionEmployees.length.toString()} color="orange" />
-        <SummaryCard icon={<ClipboardCheck className="text-emerald-600" size={24} />} label="Active Syncs" value={activeSyncsCount.toString()} color="emerald" description="Count of personnel who have logged hours in the current tracking period." />
-        <SummaryCard icon={<TrendingUp className="text-indigo-600" size={24} />} label="Division Workload" value={`${totalDivisionHours}h`} color="indigo" />
-        <SummaryCard icon={<AlertCircle className="text-rose-600" size={24} />} label="High Utilization" value={highUtilizationCount.toString() + " Assets"} color="rose" description="Resources tracking >100% capacity (over 40h/week) in the visible period." />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 shrink-0">
+        <SummaryCard icon={<Users className="text-orange-600" size={20} />} label="Team Capacity" value={divisionEmployees.length.toString()} color="orange" />
+        <SummaryCard icon={<ClipboardCheck className="text-emerald-600" size={20} />} label="Active Syncs" value={activeSyncsCount.toString()} color="emerald" description="Count of personnel who have logged hours in the current tracking period." />
+        <SummaryCard icon={<TrendingUp className="text-indigo-600" size={20} />} label="Division Workload" value={`${totalDivisionHours}h`} color="indigo" />
+        <SummaryCard icon={<AlertCircle className="text-rose-600" size={20} />} label="High Utilization" value={highUtilizationCount.toString() + " Assets"} color="rose" description="Resources tracking >100% capacity (over 40h/week) in the visible period." />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col h-[400px] lg:h-[500px]">
-           <div className="p-8 border-b border-gray-50 flex flex-col shrink-0">
-               <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">Task Impact</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col h-[320px] lg:h-[380px]">
+           <div className="p-5 sm:p-6 border-b border-gray-50 flex flex-col shrink-0">
+               <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Task Impact</h3>
                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Top allocated activities by volume</p>
            </div>
-           <div className="flex-1 min-h-0 p-6">
+           <div className="flex-1 min-h-0 p-4 sm:p-5">
                {divisionTaskStats.length > 0 ? (
                  <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={divisionTaskStats} layout="vertical" margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
@@ -164,22 +164,22 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users,
            </div>
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col h-[500px] lg:h-[600px]">
-          <div className="px-8 py-7 border-b border-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center shrink-0 gap-2">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">Resource Utilization report</h3>
+        <div className="lg:col-span-2 bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col h-[380px] lg:h-[450px]">
+          <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center shrink-0 gap-2">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Resource Utilization report</h3>
             <div className="flex items-center space-x-2 text-gray-400">
-               <Info size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Base 40h / week threshold</span>
+               <Info size={14} /><span className="text-[9px] font-bold uppercase tracking-widest">Base 40h / week threshold</span>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 space-y-3">
             {utilizationData.length > 0 ? utilizationData.map(emp => (
-              <div key={emp.id} className="flex flex-col sm:flex-row items-center p-5 sm:p-6 bg-white border border-gray-50 rounded-[2rem] shadow-sm hover:shadow-xl hover:shadow-[#EA5B0C]/10 transition-all group gap-6">
+              <div key={emp.id} className="flex flex-col sm:flex-row items-center p-3 sm:p-4 bg-white border border-gray-50 rounded-xl sm:rounded-2xl shadow-sm hover:shadow-lg hover:shadow-[#EA5B0C]/10 transition-all group gap-4">
                   <div className="flex items-center flex-1 w-full">
-                     <div className="w-16 h-16 rounded-2xl bg-gray-50 overflow-hidden flex items-center justify-center shrink-0 mr-5 border border-gray-100 shadow-inner">
-                        {emp.avatar ? <img src={emp.avatar} className="w-full h-full object-cover" alt="" /> : <span className="font-black text-gray-300 text-xl">{emp.fullName[0]}</span>}
+                     <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gray-50 overflow-hidden flex items-center justify-center shrink-0 mr-3 sm:mr-4 border border-gray-100 shadow-inner">
+                        {emp.avatar ? <img src={emp.avatar} className="w-full h-full object-cover" alt="" /> : <span className="font-black text-gray-300 text-base sm:text-lg">{emp.fullName[0]}</span>}
                      </div>
                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xl font-black text-gray-900 tracking-tight truncate">{emp.fullName}</h4>
+                        <h4 className="text-base sm:text-lg font-black text-gray-900 tracking-tight truncate">{emp.fullName}</h4>
                         <div className="h-2.5 w-full max-w-sm rounded-full bg-gray-100 overflow-hidden mt-3 mb-3 flex justify-start">
                            <div className="flex h-full rounded-full overflow-hidden" style={{ width: `${emp.utilizationPercent}%` }}>
                               {emp.distribution.map((seg) => <div key={seg.taskId} style={{ width: `${seg.relativePercent}%`, backgroundColor: seg.color }} className="h-full border-r border-white/20 last:border-0" />)}
@@ -195,8 +195,8 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users,
                         )}
                      </div>
                   </div>
-                  <button onClick={() => onViewEmployee(emp.id)} className="w-full sm:w-auto flex items-center justify-center space-x-3 px-8 py-4 bg-[#EA5B0C] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#D4500A] shadow-xl shadow-[#EA5B0C]/20 active:scale-95 transition-all">
-                     <ExternalLink size={16} /> <span>Inspect</span>
+                  <button onClick={() => onViewEmployee(emp.id)} className="w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-3 bg-[#EA5B0C] text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#D4500A] shadow-lg shadow-[#EA5B0C]/20 active:scale-95 transition-all">
+                     <ExternalLink size={14} /> <span>Inspect</span>
                   </button>
               </div>
             )) : <div className="flex flex-col items-center py-20 opacity-30"><Search size={48} className="text-gray-300 mb-4" /><p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">No personnel records found</p></div>}
@@ -208,22 +208,22 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users,
 };
 
 const SummaryCard: React.FC<{ icon: React.ReactNode, label: string, value: string, color: string, description?: string }> = ({ icon, label, value, color, description }) => (
-  <div className="bg-white p-6 sm:p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100 flex items-center space-x-6 group hover:shadow-[#EA5B0C]/10 transition-all relative">
-    <div className={`p-4 bg-${color}-50 rounded-2xl group-hover:scale-110 transition-transform`}>{icon}</div>
+  <div className="bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-100 shadow-xl shadow-gray-100 flex items-center space-x-4 sm:space-x-5 group hover:shadow-[#EA5B0C]/10 transition-all relative">
+    <div className={`p-2.5 sm:p-3 bg-${color}-50 rounded-xl group-hover:scale-110 transition-transform`}>{icon}</div>
     <div className="flex-1 min-w-0">
       <div className="flex items-center space-x-2">
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">{label}</p>
+        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate">{label}</p>
         {description && (
           <div className="group/info relative">
-            <Info size={12} className="text-gray-300 cursor-help hover:text-gray-500 transition-colors" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-64 p-5 bg-gray-900 text-white text-[10px] font-bold uppercase tracking-wide leading-relaxed rounded-2xl opacity-0 group-hover/info:opacity-100 pointer-events-none transition-all duration-300 z-50 shadow-2xl scale-95 group-hover/info:scale-100 origin-bottom">
+            <Info size={11} className="text-gray-300 cursor-help hover:text-gray-500 transition-colors" />
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-64 p-4 bg-gray-900 text-white text-[9px] font-bold uppercase tracking-wide leading-relaxed rounded-xl opacity-0 group-hover/info:opacity-100 pointer-events-none transition-all duration-300 z-50 shadow-2xl scale-95 group-hover/info:scale-100 origin-bottom">
               {description}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-[10px] border-transparent border-t-gray-900"></div>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-[8px] border-transparent border-t-gray-900"></div>
             </div>
           </div>
         )}
       </div>
-      <p className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tighter mt-1">{value}</p>
+      <p className="text-xl sm:text-2xl font-black text-gray-900 tracking-tighter mt-1">{value}</p>
     </div>
   </div>
 );

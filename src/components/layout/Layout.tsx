@@ -68,12 +68,17 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentView, onNavigate, o
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-[88px] hover:w-64 bg-white text-gray-900 shrink-0 h-screen transition-all duration-300 ease-in-out border-r border-gray-100 shadow-sm group z-50">
         <div className="p-6 pb-2 overflow-hidden flex flex-col h-full">
-          <div className="mb-6 mt-2 px-2 flex items-center gap-3 whitespace-nowrap h-8">
-             <div className="w-8 h-8 flex items-center justify-center shrink-0">
+          <div className="mb-6 mt-2 px-2 flex items-center gap-3 whitespace-nowrap min-h-[40px]">
+             <div className="w-10 h-10 flex items-center justify-center shrink-0">
                 <img src="/relx.png" alt="RELX Logo" className="w-full h-full object-contain" />
              </div>
-             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <h1 className="text-xl font-black tracking-tight leading-none text-[#0F172A]">RELX <span className="text-gray-400 font-medium text-lg">|</span> <span className="text-[#EA5B0C]">Reed</span></h1>
+             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-3">
+                <span className="text-2xl font-bold tracking-tight text-[#5B6670]">RELX</span>
+                <div className="w-px h-8 bg-gray-300"></div>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-sm font-bold tracking-wide text-[#5B6670]">REED</span>
+                  <span className="text-sm font-bold tracking-wide text-[#5B6670]">ELSEVIER</span>
+                </div>
              </div>
           </div>
           
@@ -122,13 +127,20 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentView, onNavigate, o
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[100] md:hidden bg-white/95 backdrop-blur-md animate-in slide-in-from-top duration-300">
           <div className="p-6 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <img src="/relx.png" alt="RELX Logo" className="w-full h-full object-contain" />
-                </div>
-                <h1 className="text-lg font-black tracking-tight text-[#0F172A]">RELX <span className="text-[#EA5B0C]">Reed</span></h1>
-              </div>
+             <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 flex items-center justify-center">
+                   <img src="/relx.png" alt="RELX Logo" className="w-full h-full object-contain" />
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <span className="text-xl font-bold tracking-tight text-[#5B6670]">RELX</span>
+                   <div className="w-px h-6 bg-gray-300"></div>
+                   <div className="flex flex-col leading-tight">
+                     <span className="text-xs font-bold tracking-wide text-[#5B6670]">REED</span>
+                     <span className="text-xs font-bold tracking-wide text-[#5B6670]">ELSEVIER</span>
+                   </div>
+                 </div>
+               </div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-gray-50 rounded-xl text-gray-500">
                 <X size={24} />
               </button>
@@ -169,7 +181,10 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentView, onNavigate, o
           <div className="w-8 h-8 flex items-center justify-center">
             <img src="/relx.png" alt="RELX Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-sm font-black tracking-tight uppercase text-gray-900">RELX Tracker</h1>
+          <h1 className="text-base tracking-tight text-gray-900">
+            <span className="font-bold">RELX</span>
+            <span className="font-normal ml-1">Tracker</span>
+          </h1>
         </div>
         <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 hover:bg-gray-50 rounded-lg text-gray-600">
           <Menu size={24} />
@@ -207,8 +222,8 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentView, onNavigate, o
         </header>
         
         {/* Responsive Content Container */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 md:p-8">
-          <div className="max-w-[1440px] mx-auto w-full">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-4 lg:p-6">
+          <div className="max-w-[1140px] xl:max-w-[1280px] mx-auto w-full">
             {children}
           </div>
         </div>

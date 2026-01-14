@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CalendarClock, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 interface AuthViewProps {
   onLogin: (username: string) => void;
@@ -23,13 +23,20 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
       <div className="w-full max-w-[400px] bg-white rounded-[2rem] shadow-2xl shadow-black/5 overflow-hidden flex flex-col relative z-10 border border-gray-100 transform transition-all hover:scale-[1.005] duration-500">
         {/* Orange Header Section */}
         <div className="bg-[#EA5B0C] pt-12 pb-16 px-8 text-center relative">
-          <div className="flex justify-center mb-4">
-             <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner">
-                <CalendarClock size={32} className="text-white" strokeWidth={2} />
+          <div className="flex justify-center mb-6">
+             <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-lg p-3">
+                <img src="/relx.png" alt="RELX Logo" className="w-full h-full object-contain" />
              </div>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">RELX <span className="font-light opacity-90">Tracker</span></h1>
-          <p className="text-[10px] font-bold text-white/80 uppercase tracking-[0.2em] mt-2">Enterprise Resource Management</p>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <span className="text-2xl font-bold tracking-tight text-white">RELX</span>
+            <div className="w-px h-8 bg-white/50"></div>
+            <div className="flex flex-col leading-tight">
+              <span className="text-sm font-bold tracking-wide text-white">REED</span>
+              <span className="text-sm font-bold tracking-wide text-white">ELSEVIER</span>
+            </div>
+          </div>
+          <p className="text-[10px] font-bold text-white/80 uppercase tracking-[0.2em]">Enterprise Resource Management</p>
         </div>
 
         {/* White Body Section */}
@@ -76,7 +83,15 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
                    <p className="text-[10px] font-bold text-gray-600 mt-0.5">Use <span className="text-[#EA5B0C] border-b border-[#EA5B0C]/20">enjay</span> or <span className="text-[#EA5B0C] border-b border-[#EA5B0C]/20">noel</span></p>
                 </div>
              </div>
-             <p className="text-center text-[8px] font-black text-gray-300 uppercase tracking-widest mt-6">2026 RELX | REED ELSEVIER</p>
+             <div className="flex items-center justify-center gap-2 mt-6">
+               <img src="/relx.png" alt="RELX Logo" className="w-6 h-6 object-contain" />
+               <span className="text-[10px] font-bold text-[#5B6670]">RELX</span>
+               <div className="w-px h-4 bg-gray-300"></div>
+               <div className="flex flex-col leading-tight">
+                 <span className="text-[8px] font-bold text-[#5B6670]">REED</span>
+                 <span className="text-[8px] font-bold text-[#5B6670]">ELSEVIER</span>
+               </div>
+             </div>
           </div>
         </div>
       </div>
