@@ -11,6 +11,7 @@ interface TrackerGridProps {
   tasks: Task[];
   entries: TimeEntry[];
   onUpdateEntry: (userId: string, taskId: string, date: string, hours: number) => void;
+  onDeleteWeekEntries?: (userId: string, taskId: string, dateRange: string[]) => void;
   onSubmit?: () => void;
   onBackToSelf?: () => void;
 }
@@ -100,10 +101,13 @@ const SearchableSelector: React.FC<{
 };
 
 export const TrackerGrid: React.FC<TrackerGridProps> = ({ 
-  viewer, employee, verticals, tasks, entries, onUpdateEntry, onSubmit, onBackToSelf
+  viewer, employee, verticals, tasks, entries, onUpdateEntry, onDeleteWeekEntries, onSubmit, onBackToSelf
 }) => {
   const [weekOffset, setWeekOffset] = useState(0);
   const [localRows, setLocalRows] = useState<GridRow[]>([]);
+  const [deleteRowId, setDeleteRowId] = useState<string | null>(null);
+  const [deleteRowTaskId, setDeleteRowTaskId] = useState<string>('');
+  const [deleteRowTaskName, setDeleteRowTaskName] = useState<string>('');
   const dateInputRef = useRef<HTMLInputElement>(null);
   const isInspecting = viewer.id !== employee.id && !!onBackToSelf;
 
@@ -179,7 +183,33 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
     setLocalRows(prev => [...prev, { id: Math.random().toString(36).substring(2, 11), verticalId: verticals[0]?.id || '', taskId: '' }]);
   };
 
-  const removeRow = (id: string) => setLocalRows(prev => prev.filter(r => r.id !== id));
+  const requestRemoveRow = (rowId: string) => {
+    const row = localRows.find(r => r.id === rowId);
+    if (!row || !row.taskId) {
+      // If no task selected, just remove the row
+      setLocalRows(prev => prev.filter(r => r.id !== rowId));
+      return;
+    }
+    const task = tasks.find(t => t.id === row.taskId);
+    setDeleteRowId(rowId);
+    setDeleteRowTaskId(row.taskId);
+    setDeleteRowTaskName(task?.name || 'this task');
+  };
+
+  const confirmRemoveRow = () => {
+    if (deleteRowId && deleteRowTaskId && onDeleteWeekEntries) {
+      // Get the exact dates for the CURRENT week being viewed (based on weekOffset)
+      const weekDates = days.map(day => day.dateStr);
+      console.log('TrackerGrid - Requesting delete for week:', { weekOffset, weekDates, employeeId: employee.id, taskId: deleteRowTaskId });
+      // Ensure we only delete entries for these specific dates (current week only)
+      onDeleteWeekEntries(employee.id, deleteRowTaskId, weekDates);
+    }
+    // Remove the row from UI
+    setLocalRows(prev => prev.filter(r => r.id !== deleteRowId));
+    setDeleteRowId(null);
+    setDeleteRowTaskId('');
+    setDeleteRowTaskName('');
+  };
 
   const updateRowSelection = (rowId: string, field: 'verticalId' | 'taskId', value: string) => {
     if (field === 'verticalId') {
@@ -289,7 +319,7 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
                     <td className="py-2 text-center font-black text-[#EA5B0C] bg-[#EA5B0C]/5 text-[11px] sm:text-xs tracking-tighter border-l border-gray-50">{rowTotal || '-'}</td>
                     {viewer.id === employee.id && (
                       <td className="py-2 text-center border-l border-gray-50">
-                        <button onClick={() => removeRow(row.id)} className="text-gray-200 hover:text-red-500 transition-colors p-2"><Trash2 size={14} /></button>
+                        <button onClick={() => requestRemoveRow(row.id)} className="text-gray-200 hover:text-red-500 transition-colors p-2"><Trash2 size={14} /></button>
                       </td>
                     )}
                   </tr>
@@ -329,6 +359,43 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Delete Tracking Line Confirmation Modal */}
+      {deleteRowId && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => { setDeleteRowId(null); setDeleteRowTaskId(''); setDeleteRowTaskName(''); }}>
+          <div className="bg-white rounded-2xl w-full max-w-[380px] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Trash2 size={16} className="text-[#EA5B0C]" strokeWidth={2.5} />
+                </div>
+                <h3 className="text-sm font-black text-gray-900 tracking-tight">Delete Tracking Line</h3>
+              </div>
+            </div>
+            
+            <div className="p-5">
+              <p className="text-xs font-medium text-gray-600 mb-4 leading-relaxed">
+                Delete this tracking line? All logged hours for <span className="font-black text-gray-900">{deleteRowTaskName}</span> in the current week ({weekRangeLabel}) will be removed. Previous weeks' data will remain intact.
+              </p>
+              
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => { setDeleteRowId(null); setDeleteRowTaskId(''); setDeleteRowTaskName(''); }}
+                  className="flex-1 px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmRemoveRow}
+                  className="flex-1 px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#EA5B0C] text-white hover:bg-[#D4500A] transition-all active:scale-95 shadow-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

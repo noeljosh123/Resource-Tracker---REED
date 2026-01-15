@@ -112,6 +112,34 @@ const App: React.FC = () => {
     });
   };
 
+  const deleteWeekEntries = (userId: string, taskId: string, dateRange: string[]) => {
+    // Direct string comparison - dates are already in YYYY-MM-DD format
+    const dateSet = new Set(dateRange);
+    
+    console.log('DELETE REQUEST:', { userId, taskId, dateRange });
+    
+    setTimeEntries(prev => {
+      const filtered = prev.filter(e => {
+        // Only delete if ALL conditions match EXACTLY:
+        // 1. User matches
+        // 2. Task matches  
+        // 3. Date string is EXACTLY in the provided date range (current week only)
+        const shouldDelete = e.userId === userId && 
+                            e.taskId === taskId && 
+                            dateSet.has(e.date);
+        
+        if (shouldDelete) {
+          console.log('DELETING:', e);
+        }
+        
+        return !shouldDelete; // Keep entries that should NOT be deleted
+      });
+      
+      console.log('Entries before delete:', prev.length, 'After delete:', filtered.length);
+      return filtered;
+    });
+  };
+
   const handleSubmit = () => {
     if (!currentUser) return;
     if (confirm("Submit and verify all pending logs?")) {
@@ -184,6 +212,7 @@ const App: React.FC = () => {
             tasks={tasks}
             entries={timeEntries.filter(e => e.userId === targetId)}
             onUpdateEntry={updateTimeEntry}
+            onDeleteWeekEntries={deleteWeekEntries}
             onSubmit={handleSubmit}
             onBackToSelf={() => {
                 setSelectedEmployeeId(null);
