@@ -42,6 +42,7 @@ function getWeekNumber(d: Date): number {
 
 export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users, entries, tasks, onViewEmployee }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [summaryRange, setSummaryRange] = useState<'week' | 'month' | 'year'>('week');
   
   const divisionEmployees = useMemo(() => {
     return users.filter(u => u.divisionId === user.divisionId && u.id !== user.id);
@@ -53,14 +54,40 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users,
     );
   }, [divisionEmployees, searchTerm]);
   
+  const isInSummaryRange = useMemo(() => {
+    const now = new Date();
+    const currentWeek = getWeekNumber(now);
+    const currentYear = now.getUTCFullYear();
+    const currentMonth = now.getUTCMonth();
+    const startOfMonth = new Date(Date.UTC(currentYear, currentMonth, 1));
+    const endOfMonth = new Date(Date.UTC(currentYear, currentMonth + 1, 0));
+    const startOfYear = new Date(Date.UTC(currentYear, 0, 1));
+    const endOfYear = new Date(Date.UTC(currentYear, 11, 31));
+
+    if (summaryRange === 'week') {
+      return (entryDate: Date) =>
+        entryDate.getUTCFullYear() === currentYear && getWeekNumber(entryDate) === currentWeek;
+    }
+
+    const startStr = (summaryRange === 'month' ? startOfMonth : startOfYear).toISOString().split('T')[0];
+    const endStr = (summaryRange === 'month' ? endOfMonth : endOfYear).toISOString().split('T')[0];
+    return (entryDate: Date) => {
+      const entryStr = entryDate.toISOString().split('T')[0];
+      return entryStr >= startStr && entryStr <= endStr;
+    };
+  }, [summaryRange]);
+
   const activeSyncsCount = useMemo(() => {
-    return divisionEmployees.filter(emp => 
-      entries.some(e => e.userId === emp.id && e.hours > 0)
+    return divisionEmployees.filter(emp =>
+      entries.some(e => {
+        if (e.userId !== emp.id || e.hours <= 0) return false;
+        return isInSummaryRange(new Date(e.date));
+      })
     ).length;
-  }, [divisionEmployees, entries]);
+  }, [divisionEmployees, entries, isInSummaryRange]);
 
   const totalDivisionHours = entries
-    .filter(e => divisionEmployees.some(emp => emp.id === e.userId))
+    .filter(e => divisionEmployees.some(emp => emp.id === e.userId) && isInSummaryRange(new Date(e.date)))
     .reduce((acc, curr) => acc + curr.hours, 0);
 
   const divisionTaskStats = useMemo(() => {
@@ -105,39 +132,51 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ user, users,
   }, [filteredEmployees, entries, tasks]);
 
   const highUtilizationCount = useMemo(() => {
-     return divisionEmployees.filter(emp => {
-        const empEntries = entries.filter(e => e.userId === emp.id);
-        const currentWeek = getWeekNumber(new Date());
-        const targetWeeks = [currentWeek - 3, currentWeek - 2, currentWeek - 1, currentWeek];
-        return targetWeeks.some(w => {
-           const weekTotal = empEntries.filter(e => getWeekNumber(new Date(e.date)) === w).reduce((s, e) => s + e.hours, 0);
-           return weekTotal > 40;
-        });
-     }).length;
-  }, [divisionEmployees, entries]);
+    return divisionEmployees.filter(emp => {
+      const totalInRange = entries
+        .filter(e => e.userId === emp.id && isInSummaryRange(new Date(e.date)))
+        .reduce((sum, e) => sum + e.hours, 0);
+      return totalInRange > 40;
+    }).length;
+  }, [divisionEmployees, entries, isInSummaryRange]);
 
   return (
     <div className="flex flex-col space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-top duration-500">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tighter">Oversight Hub</h1>
-          <p className="text-gray-500 font-medium mt-1 text-sm">Real-time resource verification and utilization metrics.</p>
+          <p className="text-gray-500 font-medium mt-1 text-sm">Manager’s Resource Tracker for employee overview.</p>
         </div>
-        <div className="flex items-center space-x-3 bg-white px-4 py-3 rounded-2xl border border-gray-100 shadow-sm transition-all focus-within:border-[#EA5B0C]/40 focus-within:shadow-lg focus-within:shadow-[#EA5B0C]/5 w-full lg:w-auto">
-           <Search size={18} className="text-gray-300 ml-1" />
-           <input type="text" placeholder="Search personnel..." className="bg-transparent border-none text-sm font-bold focus:ring-0 outline-none w-full lg:w-64" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          <div className="flex items-center space-x-3 bg-white px-4 py-3 rounded-2xl border border-gray-100 shadow-sm transition-all focus-within:border-[#EA5B0C]/40 focus-within:shadow-lg focus-within:shadow-[#EA5B0C]/5 w-full lg:w-auto">
+             <Search size={18} className="text-gray-300 ml-1" />
+             <input type="text" placeholder="Search personnel..." className="bg-transparent border-none text-sm font-bold focus:ring-0 outline-none w-full lg:w-64" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          </div>
+          <div className="flex bg-white p-1 rounded-xl border border-gray-100 shadow-sm w-full sm:w-auto">
+            {(['week', 'month', 'year'] as const).map((range) => (
+              <button
+                key={range}
+                onClick={() => setSummaryRange(range)}
+                className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                  summaryRange === range ? 'bg-[#EA5B0C] text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 shrink-0">
         <SummaryCard icon={<Users className="text-orange-600" size={20} />} label="Team Capacity" value={divisionEmployees.length.toString()} color="orange" />
-        <SummaryCard icon={<ClipboardCheck className="text-emerald-600" size={20} />} label="Active Syncs" value={activeSyncsCount.toString()} color="emerald" description="Count of personnel who have logged hours in the current tracking period." />
-        <SummaryCard icon={<TrendingUp className="text-indigo-600" size={20} />} label="Division Workload" value={`${totalDivisionHours}h`} color="indigo" />
-        <SummaryCard icon={<AlertCircle className="text-rose-600" size={20} />} label="High Utilization" value={highUtilizationCount.toString() + " Assets"} color="rose" description="Resources tracking >100% capacity (over 40h/week) in the visible period." />
+        <SummaryCard icon={<ClipboardCheck className="text-emerald-600" size={20} />} label="Active Syncs" value={activeSyncsCount.toString()} color="emerald" description={`Count of personnel who have logged hours in the selected ${summaryRange}.`} />
+        <SummaryCard icon={<TrendingUp className="text-indigo-600" size={20} />} label="Division Workload" value={`${totalDivisionHours}h`} color="indigo" description={`Total hours logged in the selected ${summaryRange}.`} />
+        <SummaryCard icon={<AlertCircle className="text-rose-600" size={20} />} label="High Utilization" value={highUtilizationCount.toString() + " Assets"} color="rose" description={`Resources tracking >40h in the selected ${summaryRange}.`} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
-        <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col h-[320px] lg:h-[380px]">
+        <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col h-[380px] lg:h-[450px]">
            <div className="p-5 sm:p-6 border-b border-gray-50 flex flex-col shrink-0">
                <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Task Impact</h3>
                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Top allocated activities by volume</p>

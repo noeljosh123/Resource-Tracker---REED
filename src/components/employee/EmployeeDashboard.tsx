@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { User, TimeEntry, Task } from '../../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label } from 'recharts';
 import { Clock, ArrowRight, Zap, CalendarDays, ChevronLeft, ChevronRight, TrendingUp, Layers, PieChart } from 'lucide-react';
@@ -26,10 +26,39 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [calendarViewDate, setCalendarViewDate] = useState(new Date(selectedDate));
   const [view, setView] = useState<'overview' | 'tasks'>('overview');
+  const [overviewRange, setOverviewRange] = useState<'day' | 'week' | 'year'>('week');
   const [allocationRange, setAllocationRange] = useState<'week' | 'month' | 'year'>('week');
+
+  useEffect(() => {
+    if (view === 'overview') {
+      setOverviewRange('week');
+    }
+  }, [view]);
   
   const userEntries = entries.filter(e => e.userId === user.id);
-  const totalHours = userEntries.reduce((acc, curr) => acc + curr.hours, 0);
+
+  const filteredOverviewEntries = useMemo(() => {
+    if (overviewRange === 'day') {
+      return userEntries.filter(e => e.date === selectedDate);
+    }
+
+    if (overviewRange === 'week') {
+      const start = new Date(selectedDate);
+      start.setDate(start.getDate() - start.getDay());
+      const startStr = start.toISOString().split('T')[0];
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      const endStr = end.toISOString().split('T')[0];
+      return userEntries.filter(e => e.date >= startStr && e.date <= endStr);
+    }
+
+    const year = new Date(selectedDate).getUTCFullYear();
+    const startStr = new Date(Date.UTC(year, 0, 1)).toISOString().split('T')[0];
+    const endStr = new Date(Date.UTC(year, 11, 31)).toISOString().split('T')[0];
+    return userEntries.filter(e => e.date >= startStr && e.date <= endStr);
+  }, [overviewRange, userEntries, selectedDate]);
+
+  const totalHours = filteredOverviewEntries.reduce((acc, curr) => acc + curr.hours, 0);
 
   const allTimeTaskStats = useMemo(() => {
     const stats: Record<string, number> = {};
@@ -43,6 +72,19 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
             return { name: task?.name || 'Unknown', hours, id };
         });
   }, [userEntries, tasks]);
+
+  const overviewTaskStats = useMemo(() => {
+    const stats: Record<string, number> = {};
+    filteredOverviewEntries.forEach(e => {
+      if (e.taskId) stats[e.taskId] = (stats[e.taskId] || 0) + e.hours;
+    });
+    return Object.entries(stats)
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, hours]) => {
+        const task = tasks.find(t => t.id === id);
+        return { name: task?.name || 'Unknown', hours, id };
+      });
+  }, [filteredOverviewEntries, tasks]);
 
   const filteredTaskStats = useMemo(() => {
     const currentDate = new Date(selectedDate);
@@ -86,25 +128,51 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
         });
   }, [userEntries, tasks, selectedDate, allocationRange]);
 
-  const topTask = allTimeTaskStats.length > 0 ? allTimeTaskStats[0] : null;
-  const uniqueTaskCount = allTimeTaskStats.length;
+  const topTask = overviewTaskStats.length > 0 ? overviewTaskStats[0] : null;
+  const uniqueTaskCount = overviewTaskStats.length;
 
   const weekData = useMemo(() => {
     const start = new Date(selectedDate);
     start.setDate(start.getDate() - start.getDay());
-    
+
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       const dateStr = d.toISOString().split('T')[0];
       const dayHours = userEntries.filter(e => e.date === dateStr).reduce((acc, curr) => acc + curr.hours, 0);
-      return { 
-        name: d.toLocaleDateString('en-US', { weekday: 'short' }), 
+      return {
+        name: d.toLocaleDateString('en-US', { weekday: 'short' }),
         hours: dayHours,
-        date: dateStr 
+        date: dateStr
       };
     });
   }, [userEntries, selectedDate]);
+
+  const yearData = useMemo(() => {
+    const year = new Date(selectedDate).getUTCFullYear();
+    return Array.from({ length: 12 }, (_, i) => {
+      const monthStart = new Date(Date.UTC(year, i, 1));
+      const monthEnd = new Date(Date.UTC(year, i + 1, 0));
+      const startStr = monthStart.toISOString().split('T')[0];
+      const endStr = monthEnd.toISOString().split('T')[0];
+      const monthHours = userEntries
+        .filter(e => e.date >= startStr && e.date <= endStr)
+        .reduce((acc, curr) => acc + curr.hours, 0);
+      return {
+        name: monthStart.toLocaleDateString('en-US', { month: 'short' }),
+        hours: monthHours
+      };
+    });
+  }, [userEntries, selectedDate]);
+
+  const overviewData = useMemo(() => {
+    if (overviewRange === 'day') {
+      const dayHours = userEntries.filter(e => e.date === selectedDate).reduce((acc, curr) => acc + curr.hours, 0);
+      return [{ name: 'Today', hours: dayHours, date: selectedDate }];
+    }
+    if (overviewRange === 'year') return yearData;
+    return weekData;
+  }, [overviewRange, userEntries, selectedDate, weekData, yearData]);
 
   const calendarDays = useMemo(() => {
     const year = calendarViewDate.getFullYear();
@@ -203,24 +271,30 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
                     <div className="p-3 bg-[#EA5B0C]/5 rounded-xl text-[#EA5B0C]"><Zap size={22} strokeWidth={2.5} /></div>
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">Activity Analytics</h3>
                 </div>
-                <p className="hidden md:block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Week Utilization</p>
+                <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100 self-start md:self-auto overflow-x-auto no-scrollbar">
+                    {(['day', 'week', 'year'] as const).map((r) => (
+                        <button key={r} onClick={() => setOverviewRange(r)} className={`px-3 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${overviewRange === r ? 'bg-white text-[#EA5B0C] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
+                            {r}
+                        </button>
+                    ))}
+                </div>
               </div>
               <div className="flex-1 min-h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weekData}>
+                  <BarChart data={overviewData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#6B7280' }} dy={10} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#6B7280' }} />
                     <Tooltip cursor={{ fill: '#FFF8F1' }} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 50px -12px rgba(234,91,12,0.1)', fontWeight: '900', padding: '12px', fontSize: '12px', color: '#111827' }} />
                     <Bar dataKey="hours" radius={[8, 8, 8, 8]} barSize={40}>
-                      {weekData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.date === selectedDate ? '#EA5B0C' : '#E5E7EB'} />)}
+                      {overviewData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.date === selectedDate ? '#EA5B0C' : '#E5E7EB'} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="bg-white p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col">
+            <div className="bg-white p-5 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col min-h-[250px] sm:h-[380px]">
               <div className="flex items-center justify-between mb-8 shrink-0">
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-blue-50 rounded-xl text-blue-600"><CalendarDays size={22} strokeWidth={2.5} /></div>

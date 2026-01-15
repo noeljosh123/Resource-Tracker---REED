@@ -27,7 +27,31 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentView, onNavigate, o
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [showProfileModal, setShowProfileModal] = React.useState(false);
   const [newAvatarUrl, setNewAvatarUrl] = React.useState('');
+  const [isSidebarExpanded, setIsSidebarExpanded] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const sidebarTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleSidebarMouseEnter = () => {
+    sidebarTimeoutRef.current = setTimeout(() => {
+      setIsSidebarExpanded(true);
+    }, 500); // 0.5 second delay
+  };
+
+  const handleSidebarMouseLeave = () => {
+    if (sidebarTimeoutRef.current) {
+      clearTimeout(sidebarTimeoutRef.current);
+      sidebarTimeoutRef.current = null;
+    }
+    setIsSidebarExpanded(false);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (sidebarTimeoutRef.current) {
+        clearTimeout(sidebarTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.EMPLOYEE, UserRole.MANAGER] },
@@ -66,7 +90,11 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentView, onNavigate, o
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#FAFAFA] font-sans">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-[88px] hover:w-64 bg-white text-gray-900 shrink-0 h-screen transition-all duration-300 ease-in-out border-r border-gray-100 shadow-sm group z-50">
+      <aside 
+        className={`hidden md:flex flex-col ${isSidebarExpanded ? 'w-64' : 'w-[88px]'} bg-white text-gray-900 shrink-0 h-screen transition-all duration-300 ease-in-out border-r border-gray-100 shadow-sm group z-50`}
+        onMouseEnter={handleSidebarMouseEnter}
+        onMouseLeave={handleSidebarMouseLeave}
+      >
         <div className="p-6 pb-2 overflow-hidden flex flex-col h-full">
           <div className="mb-6 mt-2 px-2 flex items-center gap-3 whitespace-nowrap min-h-[40px]">
              <div className="w-10 h-10 flex items-center justify-center shrink-0">
@@ -91,12 +119,12 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentView, onNavigate, o
                 onClick={() => onNavigate(item.id)}
                 className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[13px] font-bold transition-all relative ${
                   currentView === item.id 
-                    ? 'group-hover:bg-[#0F172A] group-hover:text-white group-hover:shadow-xl group-hover:shadow-gray-200 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-8 before:bg-[#EA5B0C] before:rounded-r-full group-hover:before:bg-white' 
+                    ? `${isSidebarExpanded ? 'bg-[#0F172A] text-white shadow-xl shadow-gray-200' : ''} before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-8 before:bg-[#EA5B0C] before:rounded-r-full ${isSidebarExpanded ? 'before:bg-white' : ''}` 
                     : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
                 <div className="w-5 flex justify-center shrink-0">
-                  <item.icon size={20} strokeWidth={2.5} className={`transition-colors ${currentView === item.id ? 'text-[#EA5B0C] group-hover:text-white' : 'text-[#EA5B0C]'}`} />
+                  <item.icon size={20} strokeWidth={2.5} className={`transition-colors ${currentView === item.id ? (isSidebarExpanded ? 'text-white' : 'text-[#EA5B0C]') : 'text-[#EA5B0C]'}`} />
                 </div>
                 <span className="tracking-wide whitespace-nowrap opacity-0 w-0 group-hover:w-auto group-hover:opacity-100 transition-all duration-300 overflow-hidden">
                     {item.label}

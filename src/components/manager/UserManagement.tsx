@@ -7,7 +7,7 @@ interface UserManagementProps {
   manager: User;
   onAddUser: (user: Omit<User, 'id'>) => void;
   onUpdateUser: (user: User) => void;
-  onRemoveUser: (userId: string) => void;
+  onRemoveUser: (userId: string, userName: string) => void;
   users: User[];
 }
 
@@ -231,7 +231,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ manager, onAddUs
                         <Edit3 size={14} />
                       </button>
                       <button 
-                        onClick={() => onRemoveUser(u.id)}
+                        onClick={() => onRemoveUser(u.id, u.fullName)}
                         className={`p-2 rounded-lg text-gray-300 transition-all ${u.id === manager.id ? 'opacity-0 pointer-events-none' : 'hover:bg-rose-50 hover:text-rose-500'}`}
                         title="Decommission Access Key"
                       >

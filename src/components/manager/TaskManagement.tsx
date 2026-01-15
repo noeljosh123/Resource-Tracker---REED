@@ -9,13 +9,19 @@ interface TaskManagementProps {
   tasks: Task[];
   onAddVertical: (name: string) => void;
   onAddTask: (name: string, verticalId: string) => void;
+  onRemoveTask: (taskId: string) => void;
+  onRemoveVertical: (verticalId: string) => void;
 }
 
-export const TaskManagement: React.FC<TaskManagementProps> = ({ manager, verticals, tasks, onAddVertical, onAddTask }) => {
+export const TaskManagement: React.FC<TaskManagementProps> = ({ manager, verticals, tasks, onAddVertical, onAddTask, onRemoveTask, onRemoveVertical }) => {
   const [newVerticalName, setNewVerticalName] = useState('');
   const [newTaskName, setNewTaskName] = useState('');
   const [selectedVerticalId, setSelectedVerticalId] = useState('');
   const [expandedVerticals, setExpandedVerticals] = useState<Set<string>>(new Set());
+  const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
+  const [deleteTaskName, setDeleteTaskName] = useState('');
+  const [deleteVerticalId, setDeleteVerticalId] = useState<string | null>(null);
+  const [deleteVerticalName, setDeleteVerticalName] = useState('');
   
   const verticalRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const taskListRef = useRef<HTMLDivElement>(null);
@@ -100,29 +106,44 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ manager, vertica
 
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-2">
             {divisionVerticals.map(v => (
-              <button 
-                key={v.id} 
-                onClick={() => scrollToVertical(v.id)}
-                className={`w-full group p-4 rounded-2xl border transition-all flex items-center justify-between text-left ${
+              <div
+                key={v.id}
+                className={`w-full group p-4 rounded-2xl border transition-all flex items-center justify-between ${
                   selectedVerticalId === v.id 
-                  ? 'bg-white border-[#EA5B0C] ring-1 ring-[#EA5B0C] shadow-lg shadow-[#EA5B0C]/5' 
-                  : 'bg-white border-gray-100 hover:border-gray-300'
+                    ? 'bg-white border-[#EA5B0C] ring-1 ring-[#EA5B0C] shadow-lg shadow-[#EA5B0C]/5' 
+                    : 'bg-white border-gray-100 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center space-x-4">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                    selectedVerticalId === v.id ? 'bg-[#EA5B0C] text-white' : 'bg-gray-50 text-[#EA5B0C]'
-                  }`}>
-                    <Hash size={14} strokeWidth={2.5} />
+                <button 
+                  onClick={() => scrollToVertical(v.id)}
+                  className="flex-1 flex items-center justify-between text-left"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                      selectedVerticalId === v.id ? 'bg-[#EA5B0C] text-white' : 'bg-gray-50 text-[#EA5B0C]'
+                    }`}>
+                      <Hash size={14} strokeWidth={2.5} />
+                    </div>
+                    <span className={`text-sm font-bold uppercase tracking-wide ${
+                      selectedVerticalId === v.id ? 'text-gray-900' : 'text-gray-600'
+                    }`}>{v.name}</span>
                   </div>
-                  <span className={`text-sm font-bold uppercase tracking-wide ${
-                    selectedVerticalId === v.id ? 'text-gray-900' : 'text-gray-600'
-                  }`}>{v.name}</span>
-                </div>
-                <ChevronRight size={16} className={`transition-all ${
-                  selectedVerticalId === v.id ? 'text-[#EA5B0C] translate-x-1' : 'text-gray-300'
-                }`} />
-              </button>
+                  <ChevronRight size={16} className={`transition-all ${
+                    selectedVerticalId === v.id ? 'text-[#EA5B0C] translate-x-1' : 'text-gray-300'
+                  }`} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteVerticalId(v.id);
+                    setDeleteVerticalName(v.name);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-300 hover:text-red-500 transition-all rounded-lg hover:bg-red-50 shrink-0 ml-2"
+                  title="Delete Vertical"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -207,7 +228,11 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ manager, vertica
                               <div className="w-1.5 h-1.5 rounded-full bg-gray-200 group-hover:bg-[#EA5B0C] transition-colors shrink-0"></div>
                               <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors tracking-tight truncate">{t.name}</span>
                             </div>
-                            <button className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-300 hover:text-red-500 transition-all rounded-lg hover:bg-red-50 shrink-0">
+                            <button
+                              onClick={() => { setDeleteTaskId(t.id); setDeleteTaskName(t.name); }}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-300 hover:text-red-500 transition-all rounded-lg hover:bg-red-50 shrink-0"
+                              title="Delete task"
+                            >
                               <Trash2 size={12} />
                             </button>
                           </div>
@@ -227,6 +252,86 @@ export const TaskManagement: React.FC<TaskManagementProps> = ({ manager, vertica
           </div>
         </div>
       </div>
+      {deleteTaskId && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => { setDeleteTaskId(null); setDeleteTaskName(''); }}>
+          <div className="bg-white rounded-2xl w-full max-w-[360px] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                  <Trash2 size={16} className="text-red-500" strokeWidth={2.5} />
+                </div>
+                <h3 className="text-sm font-black text-gray-900 tracking-tight">Remove Task</h3>
+              </div>
+            </div>
+            
+            <div className="p-5">
+              <p className="text-xs font-medium text-gray-600 mb-4 leading-relaxed">
+                Are you sure you want to delete <span className="font-black text-gray-900">{deleteTaskName}</span>? All associated time entries will be permanently removed.
+              </p>
+              
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => { setDeleteTaskId(null); setDeleteTaskName(''); }}
+                  className="flex-1 px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    onRemoveTask(deleteTaskId);
+                    setDeleteTaskId(null);
+                    setDeleteTaskName('');
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#EA5B0C] text-white hover:bg-[#D4500A] transition-all active:scale-95 shadow-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Vertical Confirmation Modal */}
+      {deleteVerticalId && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => { setDeleteVerticalId(null); setDeleteVerticalName(''); }}>
+          <div className="bg-white rounded-2xl w-full max-w-[380px] shadow-2xl border border-gray-200 overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                  <Trash2 size={16} className="text-[#EA5B0C]" strokeWidth={2.5} />
+                </div>
+                <h3 className="text-sm font-black text-gray-900 tracking-tight">Delete Vertical</h3>
+              </div>
+            </div>
+            
+            <div className="p-5">
+              <p className="text-xs font-medium text-gray-600 mb-4 leading-relaxed">
+                Delete this vertical? <span className="font-black text-gray-900">{deleteVerticalName}</span> and all associated tasks will be permanently removed.
+              </p>
+              
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => { setDeleteVerticalId(null); setDeleteVerticalName(''); }}
+                  className="flex-1 px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    onRemoveVertical(deleteVerticalId);
+                    setDeleteVerticalId(null);
+                    setDeleteVerticalName('');
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#EA5B0C] text-white hover:bg-[#D4500A] transition-all active:scale-95 shadow-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

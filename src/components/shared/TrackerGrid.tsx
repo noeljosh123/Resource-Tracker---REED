@@ -183,11 +183,28 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
 
   const updateRowSelection = (rowId: string, field: 'verticalId' | 'taskId', value: string) => {
     if (field === 'verticalId') {
-      setLocalRows(prev => prev.map(r => r.id === rowId ? { ...r, verticalId: value, taskId: '' } : r));
-    } else {
-      if (localRows.some(r => r.id !== rowId && r.taskId === value)) { alert("Task already exists in another row."); return; }
-      setLocalRows(prev => prev.map(r => r.id === rowId ? { ...r, taskId: value } : r));
+      // Keep taskId to avoid clearing entered hours; user can reselect a task after changing vertical.
+      setLocalRows(prev => prev.map(r => r.id === rowId ? { ...r, verticalId: value } : r));
+      return;
     }
+
+    if (localRows.some(r => r.id !== rowId && r.taskId === value)) { alert("Task already exists in another row."); return; }
+
+    const row = localRows.find(r => r.id === rowId);
+    const previousTaskId = row?.taskId;
+
+    if (previousTaskId && previousTaskId !== value) {
+      // Move existing hours from the old task to the newly selected task.
+      days.forEach(day => {
+        const hours = getHours(previousTaskId, day.dateStr);
+        if (hours > 0) {
+          onUpdateEntry(employee.id, value, day.dateStr, hours);
+          onUpdateEntry(employee.id, previousTaskId, day.dateStr, 0);
+        }
+      });
+    }
+
+    setLocalRows(prev => prev.map(r => r.id === rowId ? { ...r, taskId: value } : r));
   };
 
   return (
