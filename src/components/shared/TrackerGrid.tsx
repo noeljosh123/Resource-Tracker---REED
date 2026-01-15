@@ -133,7 +133,18 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(startOfWeek);
       d.setDate(startOfWeek.getDate() + i);
-      return { dateStr: d.toISOString().split('T')[0], dayName: d.toLocaleDateString('en-US', { weekday: 'short' }), dayNum: d.getDate(), month: d.toLocaleDateString('en-US', { month: 'short' }), year: d.getFullYear() };
+      // Use timezone-safe date formatting (YYYY-MM-DD) to avoid timezone shift issues
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      return { 
+        dateStr, 
+        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }), 
+        dayNum: d.getDate(), 
+        month: d.toLocaleDateString('en-US', { month: 'short' }), 
+        year: d.getFullYear() 
+      };
     });
   }, [weekOffset]);
 
