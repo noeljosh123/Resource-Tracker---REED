@@ -10,7 +10,7 @@ import { Layout } from './components/layout';
 import { EmployeeDashboard, EmployeeInspection } from './components/employee';
 import { TrackerGrid } from './components/shared';
 import { ManagerDashboard, TaskManagement, UserManagement } from './components/manager';
-import { Shield, X } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -113,19 +113,54 @@ const App: React.FC = () => {
   };
 
   const deleteWeekEntries = (userId: string, taskId: string, dateRange: string[]) => {
-    // Direct string comparison - dates are already in YYYY-MM-DD format
-    const dateSet = new Set(dateRange);
+    // Validate dateRange - must be exactly 7 dates (one week)
+    if (!dateRange || dateRange.length !== 7) {
+      return;
+    }
     
-    setTimeEntries(prev => prev.filter(e => {
-      // Only delete if ALL conditions match EXACTLY:
-      // 1. User matches
-      // 2. Task matches  
-      // 3. Date string is EXACTLY in the provided date range (current week only)
-      const shouldDelete = e.userId === userId && 
-                          e.taskId === taskId && 
-                          dateSet.has(e.date);
-      return !shouldDelete; // Keep entries that should NOT be deleted
-    }));
+    // Validate and normalize all dates to YYYY-MM-DD format
+    const validDates: string[] = [];
+    for (const date of dateRange) {
+      if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        validDates.push(date);
+      }
+    }
+    
+    // If we don't have exactly 7 valid dates, abort
+    if (validDates.length !== 7) {
+      return;
+    }
+    
+    // Find min and max dates to create a strict range
+    const sortedDates = [...validDates].sort();
+    const minDate = sortedDates[0];
+    const maxDate = sortedDates[6];
+    
+    // Create a Set for exact date matching (double-check)
+    const dateSet = new Set(validDates);
+    
+    setTimeEntries(prev => {
+      const beforeCount = prev.length;
+      const filtered = prev.filter(e => {
+        // STRICT validation: Only delete if ALL conditions match EXACTLY:
+        // 1. User ID matches exactly (string comparison)
+        // 2. Task ID matches exactly (string comparison)
+        // 3. Date is within the week range AND in the exact date set
+        const userMatches = e.userId === userId;
+        const taskMatches = e.taskId === taskId;
+        
+        // Double-check: date must be >= minDate, <= maxDate, AND in the dateSet
+        const dateInRange = e.date >= minDate && e.date <= maxDate;
+        const dateInSet = dateSet.has(e.date);
+        const dateMatches = dateInRange && dateInSet;
+        
+        const shouldDelete = userMatches && taskMatches && dateMatches;
+        
+        // Keep entry if it should NOT be deleted
+        return !shouldDelete;
+      });
+      return filtered;
+    });
   };
 
   const handleSubmit = () => {

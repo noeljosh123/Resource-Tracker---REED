@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Vertical, Task, TimeEntry, EntryStatus } from '../../types';
-import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Search, Check, Send, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, Plus, Trash2, Search, Check, ArrowLeft } from 'lucide-react';
 
 interface TrackerGridProps {
   viewer: User;
@@ -100,30 +100,16 @@ const SearchableSelector: React.FC<{
   );
 };
 
-export const TrackerGrid: React.FC<TrackerGridProps> = ({ 
+export const TrackerGrid: React.FC<TrackerGridProps> = ({
   viewer, employee, verticals, tasks, entries, onUpdateEntry, onDeleteWeekEntries, onSubmit, onBackToSelf
 }) => {
   const [weekOffset, setWeekOffset] = useState(0);
-  const [localRows, setLocalRows] = useState<GridRow[]>([]);
+  const [rowsByWeek, setRowsByWeek] = useState<Record<string, GridRow[]>>({});
   const [deleteRowId, setDeleteRowId] = useState<string | null>(null);
   const [deleteRowTaskId, setDeleteRowTaskId] = useState<string>('');
   const [deleteRowTaskName, setDeleteRowTaskName] = useState<string>('');
   const dateInputRef = useRef<HTMLInputElement>(null);
   const isInspecting = viewer.id !== employee.id && !!onBackToSelf;
-
-  useEffect(() => {
-    if (localRows.length === 0) {
-      const taskIdsInEntries = Array.from(new Set(entries.map(e => e.taskId)));
-      const existingRows = taskIdsInEntries.map(tid => {
-        const task = tasks.find(t => t.id === tid);
-        return { id: Math.random().toString(36).substring(2, 11), verticalId: task?.verticalId || (verticals.length > 0 ? verticals[0].id : ''), taskId: tid };
-      }).filter(r => r.taskId);
-      if (existingRows.length === 0 && viewer.id === employee.id) {
-        existingRows.push({ id: 'default-row-' + employee.id, verticalId: verticals.length > 0 ? verticals[0].id : '', taskId: '' });
-      }
-      setLocalRows(existingRows);
-    }
-  }, [employee.id]); 
 
   const days = useMemo(() => {
     const today = new Date();
@@ -133,20 +119,59 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(startOfWeek);
       d.setDate(startOfWeek.getDate() + i);
-      // Use timezone-safe date formatting (YYYY-MM-DD) to avoid timezone shift issues
+      // Use local date formatting to avoid timezone shifts
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
-      return { 
-        dateStr, 
-        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }), 
-        dayNum: d.getDate(), 
-        month: d.toLocaleDateString('en-US', { month: 'short' }), 
-        year: d.getFullYear() 
-      };
+      return { dateStr, dayName: d.toLocaleDateString('en-US', { weekday: 'short' }), dayNum: d.getDate(), month: d.toLocaleDateString('en-US', { month: 'short' }), year: d.getFullYear() };
     });
   }, [weekOffset]);
+
+  const weekKey = days[0]?.dateStr || '';
+  const weekDateSet = useMemo(() => new Set(days.map(day => day.dateStr)), [days]);
+
+  const buildRowsForWeek = (dateSet: Set<string>) => {
+    const taskIdsInWeek = Array.from(new Set(entries.filter(e => dateSet.has(e.date)).map(e => e.taskId)));
+    const existingRows = taskIdsInWeek.map(tid => {
+      const task = tasks.find(t => t.id === tid);
+      return {
+        id: Math.random().toString(36).substring(2, 11),
+        verticalId: task?.verticalId || (verticals.length > 0 ? verticals[0].id : ''),
+        taskId: tid
+      };
+    }).filter(r => r.taskId);
+    if (existingRows.length === 0 && viewer.id === employee.id) {
+      existingRows.push({ id: `default-row-${employee.id}-${weekKey}`, verticalId: verticals.length > 0 ? verticals[0].id : '', taskId: '' });
+    }
+    return existingRows;
+  };
+
+  useEffect(() => {
+    if (!weekKey) return;
+    setRowsByWeek(prev => {
+      const currentWeekRows = prev[weekKey];
+      if (!currentWeekRows) {
+        return { ...prev, [weekKey]: buildRowsForWeek(weekDateSet) };
+      }
+      // Ensure rows exist for any tasks that already have entries in this week.
+      const existingTaskIds = new Set(currentWeekRows.map(r => r.taskId).filter(Boolean));
+      const weekTaskIds = Array.from(new Set(entries.filter(e => weekDateSet.has(e.date)).map(e => e.taskId)));
+      const missingTaskIds = weekTaskIds.filter(tid => !existingTaskIds.has(tid));
+      if (missingTaskIds.length === 0) return prev;
+      const missingRows = missingTaskIds.map(tid => {
+        const task = tasks.find(t => t.id === tid);
+        return {
+          id: Math.random().toString(36).substring(2, 11),
+          verticalId: task?.verticalId || (verticals.length > 0 ? verticals[0].id : ''),
+          taskId: tid
+        };
+      });
+      return { ...prev, [weekKey]: [...currentWeekRows, ...missingRows] };
+    });
+  }, [weekKey, weekDateSet, entries, tasks, verticals, viewer.id, employee.id]);
+
+  const localRows = rowsByWeek[weekKey] || [];
 
   const weekRangeLabel = useMemo(() => {
     const start = days[0];
@@ -191,14 +216,23 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
   const dailyTotals = days.map(day => localRows.reduce((acc, row) => acc + getHours(row.taskId, day.dateStr), 0));
 
   const addRow = () => {
-    setLocalRows(prev => [...prev, { id: Math.random().toString(36).substring(2, 11), verticalId: verticals[0]?.id || '', taskId: '' }]);
+    if (!weekKey) return;
+    setRowsByWeek(prev => {
+      const current = prev[weekKey] || [];
+      const next = [...current, { id: Math.random().toString(36).substring(2, 11), verticalId: verticals[0]?.id || '', taskId: '' }];
+      return { ...prev, [weekKey]: next };
+    });
   };
 
   const requestRemoveRow = (rowId: string) => {
     const row = localRows.find(r => r.id === rowId);
     if (!row || !row.taskId) {
       // If no task selected, just remove the row
-      setLocalRows(prev => prev.filter(r => r.id !== rowId));
+      if (!weekKey) return;
+      setRowsByWeek(prev => {
+        const current = prev[weekKey] || [];
+        return { ...prev, [weekKey]: current.filter(r => r.id !== rowId) };
+      });
       return;
     }
     const task = tasks.find(t => t.id === row.taskId);
@@ -210,12 +244,27 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
   const confirmRemoveRow = () => {
     if (deleteRowId && deleteRowTaskId && onDeleteWeekEntries) {
       // Get the exact dates for the CURRENT week being viewed (based on weekOffset)
-      const weekDates = days.map(day => day.dateStr);
-      // Ensure we only delete entries for these specific dates (current week only)
-      onDeleteWeekEntries(employee.id, deleteRowTaskId, weekDates);
+      // Validate that we have exactly 7 days
+      const weekDates = days.map(day => {
+        // Ensure dateStr is in YYYY-MM-DD format
+        return day.dateStr;
+      }).filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date));
+      
+      // Only proceed if we have exactly 7 valid dates
+      if (weekDates.length === 7) {
+        onDeleteWeekEntries(employee.id, deleteRowTaskId, weekDates);
+      } else {
+        alert('Error: Invalid week date range. Please try again.');
+        return;
+      }
     }
     // Remove the row from UI
-    setLocalRows(prev => prev.filter(r => r.id !== deleteRowId));
+    if (weekKey) {
+      setRowsByWeek(prev => {
+        const current = prev[weekKey] || [];
+        return { ...prev, [weekKey]: current.filter(r => r.id !== deleteRowId) };
+      });
+    }
     setDeleteRowId(null);
     setDeleteRowTaskId('');
     setDeleteRowTaskName('');
@@ -224,7 +273,11 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
   const updateRowSelection = (rowId: string, field: 'verticalId' | 'taskId', value: string) => {
     if (field === 'verticalId') {
       // Keep taskId to avoid clearing entered hours; user can reselect a task after changing vertical.
-      setLocalRows(prev => prev.map(r => r.id === rowId ? { ...r, verticalId: value } : r));
+      if (!weekKey) return;
+      setRowsByWeek(prev => {
+        const current = prev[weekKey] || [];
+        return { ...prev, [weekKey]: current.map(r => r.id === rowId ? { ...r, verticalId: value } : r) };
+      });
       return;
     }
 
@@ -244,7 +297,11 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
       });
     }
 
-    setLocalRows(prev => prev.map(r => r.id === rowId ? { ...r, taskId: value } : r));
+    if (!weekKey) return;
+    setRowsByWeek(prev => {
+      const current = prev[weekKey] || [];
+      return { ...prev, [weekKey]: current.map(r => r.id === rowId ? { ...r, taskId: value } : r) };
+    });
   };
 
   return (
