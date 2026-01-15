@@ -47,11 +47,32 @@ MOCK_VERTICALS.forEach((v) => {
   });
 });
 
-// Helper to generate dates for mock entries
+// Helper to generate dates for mock entries (local YYYY-MM-DD)
+const formatDate = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const getRecentDate = (daysAgo: number) => {
   const d = new Date();
   d.setDate(d.getDate() - daysAgo);
-  return d.toISOString().split('T')[0];
+  return formatDate(d);
+};
+
+const getDateOffset = (daysOffset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  return formatDate(d);
+};
+
+const getDateForMonthOffset = (monthsOffset: number, dayOfMonth: number) => {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + monthsOffset);
+  d.setDate(dayOfMonth);
+  return formatDate(d);
 };
 
 const generateMockEntries = () => {
@@ -102,6 +123,52 @@ const generateMockEntries = () => {
       date: getRecentDate(i),
       hours: 6,
       status: EntryStatus.LOGGED
+    });
+  }
+
+  // Add historical weekly data (past 8 weeks) for John Smith
+  for (let w = 1; w <= 8; w++) {
+    for (let i = 0; i < 5; i++) {
+      entries.push({
+        id: `e-u1-w${w}-${i}`,
+        userId: 'u1',
+        taskId: MOCK_TASKS[(i + w) % 8].id,
+        date: getDateOffset(-(w * 7 + i)),
+        hours: w % 2 === 0 ? 8 : 6,
+        status: EntryStatus.LOGGED
+      });
+    }
+  }
+
+  // Add monthly spread for Alice Wong (past 6 months)
+  for (let m = 1; m <= 6; m++) {
+    entries.push({
+      id: `e-u3-m${m}-0`,
+      userId: 'u3',
+      taskId: MOCK_TASKS[12 + (m % 4)].id,
+      date: getDateForMonthOffset(-m, 5),
+      hours: 6,
+      status: EntryStatus.SUBMITTED
+    });
+    entries.push({
+      id: `e-u3-m${m}-1`,
+      userId: 'u3',
+      taskId: MOCK_TASKS[9 + (m % 5)].id,
+      date: getDateForMonthOffset(-m, 18),
+      hours: 7,
+      status: EntryStatus.LOGGED
+    });
+  }
+
+  // Add yearly spread for Robert Chen (past 10 months)
+  for (let m = 1; m <= 10; m++) {
+    entries.push({
+      id: `e-u5-m${m}-0`,
+      userId: 'u5',
+      taskId: MOCK_TASKS[4 + (m % 6)].id,
+      date: getDateForMonthOffset(-m, 12),
+      hours: 8,
+      status: EntryStatus.APPROVED
     });
   }
 

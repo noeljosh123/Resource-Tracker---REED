@@ -26,7 +26,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [calendarViewDate, setCalendarViewDate] = useState(new Date(selectedDate));
   const [view, setView] = useState<'overview' | 'tasks'>('overview');
-  const [overviewRange, setOverviewRange] = useState<'day' | 'week' | 'year'>('week');
+  const [overviewRange, setOverviewRange] = useState<'week' | 'month' | 'year'>('week');
   const [allocationRange, setAllocationRange] = useState<'week' | 'month' | 'year'>('week');
 
   useEffect(() => {
@@ -38,16 +38,21 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
   const userEntries = entries.filter(e => e.userId === user.id);
 
   const filteredOverviewEntries = useMemo(() => {
-    if (overviewRange === 'day') {
-      return userEntries.filter(e => e.date === selectedDate);
-    }
-
     if (overviewRange === 'week') {
       const start = new Date(selectedDate);
       start.setDate(start.getDate() - start.getDay());
       const startStr = start.toISOString().split('T')[0];
       const end = new Date(start);
       end.setDate(start.getDate() + 6);
+      const endStr = end.toISOString().split('T')[0];
+      return userEntries.filter(e => e.date >= startStr && e.date <= endStr);
+    }
+
+    if (overviewRange === 'month') {
+      const date = new Date(selectedDate);
+      const start = new Date(date.getFullYear(), date.getMonth(), 1);
+      const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      const startStr = start.toISOString().split('T')[0];
       const endStr = end.toISOString().split('T')[0];
       return userEntries.filter(e => e.date >= startStr && e.date <= endStr);
     }
@@ -148,6 +153,25 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
     });
   }, [userEntries, selectedDate]);
 
+  const monthData = useMemo(() => {
+    const date = new Date(selectedDate);
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    const daysInMonth = monthEnd.getDate();
+
+    return Array.from({ length: daysInMonth }, (_, i) => {
+      const d = new Date(monthStart);
+      d.setDate(monthStart.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayHours = userEntries.filter(e => e.date === dateStr).reduce((acc, curr) => acc + curr.hours, 0);
+      return {
+        name: `${d.getDate()}`,
+        hours: dayHours,
+        date: dateStr
+      };
+    });
+  }, [userEntries, selectedDate]);
+
   const yearData = useMemo(() => {
     const year = new Date(selectedDate).getUTCFullYear();
     return Array.from({ length: 12 }, (_, i) => {
@@ -166,13 +190,10 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
   }, [userEntries, selectedDate]);
 
   const overviewData = useMemo(() => {
-    if (overviewRange === 'day') {
-      const dayHours = userEntries.filter(e => e.date === selectedDate).reduce((acc, curr) => acc + curr.hours, 0);
-      return [{ name: 'Today', hours: dayHours, date: selectedDate }];
-    }
     if (overviewRange === 'year') return yearData;
+    if (overviewRange === 'month') return monthData;
     return weekData;
-  }, [overviewRange, userEntries, selectedDate, weekData, yearData]);
+  }, [overviewRange, weekData, monthData, yearData]);
 
   const calendarDays = useMemo(() => {
     const year = calendarViewDate.getFullYear();
@@ -272,7 +293,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user, entr
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">Activity Analytics</h3>
                 </div>
                 <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100 self-start md:self-auto overflow-x-auto no-scrollbar">
-                    {(['day', 'week', 'year'] as const).map((r) => (
+                    {(['week', 'month', 'year'] as const).map((r) => (
                         <button key={r} onClick={() => setOverviewRange(r)} className={`px-3 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${overviewRange === r ? 'bg-white text-[#EA5B0C] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
                             {r}
                         </button>

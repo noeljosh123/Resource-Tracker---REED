@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { User, TimeEntry, Task } from '../../types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Label } from 'recharts';
 import { ArrowLeft, Edit3, Clock, TrendingUp, AlertCircle } from 'lucide-react';
@@ -26,7 +26,50 @@ const COLORS = [
 export const EmployeeInspection: React.FC<EmployeeInspectionProps> = ({ 
   employee, entries, tasks, onBack, onEditTracker 
 }) => {
-  const taskHours = entries.reduce((acc, entry) => {
+  const [range, setRange] = useState<'week' | 'month' | 'year'>('week');
+
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const parseDateString = (dateStr: string) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, (month || 1) - 1, day || 1);
+  };
+
+  const anchorDate = useMemo(() => {
+    if (entries.length === 0) return new Date();
+    const latest = entries.reduce((max, entry) => (entry.date > max ? entry.date : max), entries[0].date);
+    return parseDateString(latest);
+  }, [entries]);
+
+  const filteredEntries = useMemo(() => {
+    let start: Date;
+    let end: Date;
+
+    if (range === 'year') {
+      start = new Date(anchorDate.getFullYear(), 0, 1);
+      end = new Date(anchorDate.getFullYear(), 11, 31);
+    } else if (range === 'month') {
+      start = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
+      end = new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 0);
+    } else {
+      start = new Date(anchorDate);
+      start.setDate(anchorDate.getDate() - anchorDate.getDay());
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+    }
+
+    const startStr = formatDate(start);
+    const endStr = formatDate(end);
+
+    return entries.filter(e => e.date >= startStr && e.date <= endStr);
+  }, [entries, range, anchorDate]);
+
+  const taskHours = filteredEntries.reduce((acc, entry) => {
     acc[entry.taskId] = (acc[entry.taskId] || 0) + entry.hours;
     return acc;
   }, {} as Record<string, number>);
@@ -39,7 +82,7 @@ export const EmployeeInspection: React.FC<EmployeeInspectionProps> = ({
     })
     .sort((a, b) => b.hours - a.hours);
 
-  const totalHours = entries.reduce((acc, e) => acc + e.hours, 0);
+  const totalHours = filteredEntries.reduce((acc, e) => acc + e.hours, 0);
   const topTask = data.length > 0 ? data[0] : null;
 
   return (
@@ -57,13 +100,30 @@ export const EmployeeInspection: React.FC<EmployeeInspectionProps> = ({
             <p className="text-gray-500 font-medium text-xs uppercase tracking-wider">Performance & Allocation Overview</p>
           </div>
         </div>
-        <button 
-          onClick={onEditTracker}
-          className="flex items-center space-x-2 px-5 py-3 bg-[#EA5B0C] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#D4500A] transition-all shadow-lg shadow-[#EA5B0C]/20 hover:-translate-y-0.5"
-        >
-           <Edit3 size={14} />
-           <span>Edit Timesheet</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100 overflow-x-auto no-scrollbar">
+            {(['week', 'month', 'year'] as const).map(option => (
+              <button
+                key={option}
+                onClick={() => setRange(option)}
+                className={`px-3 sm:px-4 py-2 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${
+                  range === option
+                    ? 'bg-white text-[#EA5B0C] shadow-sm'
+                    : 'text-gray-400 hover:text-gray-700'
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          <button 
+            onClick={onEditTracker}
+            className="flex items-center space-x-2 px-5 py-3 bg-[#EA5B0C] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#D4500A] transition-all shadow-lg shadow-[#EA5B0C]/20 hover:-translate-y-0.5"
+          >
+             <Edit3 size={14} />
+             <span>Edit Timesheet</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
