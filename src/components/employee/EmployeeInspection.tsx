@@ -121,7 +121,7 @@ export const EmployeeInspection: React.FC<EmployeeInspectionProps> = ({
             className="flex items-center space-x-2 px-5 py-3 bg-[#EA5B0C] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#D4500A] transition-all shadow-lg shadow-[#EA5B0C]/20 hover:-translate-y-0.5"
           >
              <Edit3 size={14} />
-             <span>Edit Timesheet</span>
+             <span>View Timesheet</span>
           </button>
         </div>
       </div>
