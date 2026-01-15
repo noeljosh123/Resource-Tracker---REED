@@ -211,7 +211,6 @@ export const TrackerGrid: React.FC<TrackerGridProps> = ({
     if (deleteRowId && deleteRowTaskId && onDeleteWeekEntries) {
       // Get the exact dates for the CURRENT week being viewed (based on weekOffset)
       const weekDates = days.map(day => day.dateStr);
-      console.log('TrackerGrid - Requesting delete for week:', { weekOffset, weekDates, employeeId: employee.id, taskId: deleteRowTaskId });
       // Ensure we only delete entries for these specific dates (current week only)
       onDeleteWeekEntries(employee.id, deleteRowTaskId, weekDates);
     }
